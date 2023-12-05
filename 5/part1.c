@@ -1,104 +1,56 @@
 #include <stdio.h>
+#include <limits.h>
 #include <stdlib.h>
-#include "part1.h"
-
-int hash(int x) {
-    int ux = (unsigned int)x;
-    ux ^= (ux >> 20) ^ (ux >> 12);
-    return ux ^ (ux >> 7) ^ (ux >> 4);
-}
-
-int hashIndexOf(int h, int length) {
-    return h & (length - 1);
-}
-
-// - capacity must be a power of 2
-// - array property must be freed
-HashTable* initHashTable(int capacity) {
-    HashTable* ht = calloc(1, sizeof(*ht));
-    ht->array = calloc(capacity, sizeof(LinkedNode*));
-    ht->capacity = capacity;
-    return ht;
-}
-
-void destroyLinkedList(LinkedNode* node) {
-    if (node->next == NULL) {
-        free(node);
-        return;
-    }
-
-    destroyLinkedList(node->next);
-    free(node);
-}
-
-void resizeHashTable(HashTable** htp) {
-    // Make new HashTable
-    HashTable* ht = *htp;
-    HashTable* newHt = initHashTable(ht->capacity * 2);
-    for (int i = 0; i < ht->capacity; i++) {
-        if (!ht->array[i]) continue;
-        LinkedNode* curNode = ht->array[i];
-        while (curNode->next != NULL) {
-            hashPut(&newHt, curNode->key, curNode->val);
-            curNode = curNode->next;
-        }
-        hashPut(&newHt, curNode->key, curNode->val);
-        destroyLinkedList(ht->array[i]);
-        free(ht->array);
-    }
-    free(ht);
-    *htp = newHt;
-}
-
-void destroyHashTable(HashTable* ht) {
-    for (int i = 0; i < ht->capacity; i++) {
-        if (!ht->array[i]) continue;
-        destroyLinkedList(ht->array[i]);
-    }
-    free(ht->array);
-    free(ht);
-}
-
-int hashGet(HashTable* ht, int key) {
-    int idx = hashIndexOf(hash(key), ht->capacity);
-    LinkedNode* curNode = ht->array[idx];
-    while (curNode != NULL) {
-        if (curNode->key == key) return curNode->val;
-        curNode = curNode->next;
-    }
-    return -1;
-}
-
-void hashPut(HashTable** htp, int key, int val) {
-    HashTable* ht = *htp;
-    int idx = hashIndexOf(hash(key), ht->capacity);
-    if (!ht->array[idx]) {
-        ht->array[idx] = calloc(1, sizeof(LinkedNode));
-        ht->array[idx]->key = key;
-        ht->array[idx]->val = val;
-    } else {
-        // Add to end of LinkedList at idx
-        LinkedNode* curNode = ht->array[idx];
-        while (curNode->next != NULL)
-            curNode = curNode->next;
-        curNode->next = calloc(1, sizeof(LinkedNode));
-        curNode->next->key = key;
-        curNode->next->val = val;
-    }
-    double lf = ++(ht->size) / ht->capacity;
-    if (lf >= 0.65) resizeHashTable(htp);
-}
+#include <string.h>
 
 int main(int argc, char* argv[]) {
     (void)argc;
     (void)argv;
-    HashTable* ht = initHashTable(2);
-    hashPut(&ht, 8, 27);
-    hashPut(&ht, 4, 192);
-    hashPut(&ht, 13, 2);
-    int a = hashGet(ht, 8);
-    int b = hashGet(ht, 4);
-    int c = hashGet(ht, 13);
-    printf("%d %d %d\n", a, b, c);
-    destroyHashTable(ht);
+    long mappings[7][50][3] = {{{0}}};
+    long seeds[20] = {0};
+    long lowest = LONG_MAX;
+    FILE* in = fopen("input", "r");
+    char* line = NULL;
+    size_t len = 0;
+    int curMapping = -1;
+    ssize_t charsRead = 0;
+    int mapIdx = 0;
+    {
+        getline(&line, &len, in);
+        char* num = strtok(line + 7, " ");
+        for (int i = 0; num != NULL; i++, num = strtok(NULL, " "))
+            seeds[i] = strtol(num, NULL, 10);
+    }
+    while ((charsRead = getline(&line, &len, in)) != -1) {
+        if (charsRead < 2) continue;
+        if (line[charsRead - 2] == ':') {
+            curMapping++;
+            mapIdx = 0;
+            continue;
+        }
+        char* num = strtok(line, " ");
+        for (int i = 0; num != NULL; i++, num = strtok(NULL, " "))
+            mappings[curMapping][mapIdx][i] = strtol(num, NULL, 10);
+        mapIdx++;
+    }
+    fclose(in);
+    if (line) free(line);
+    for (int i = 0; i < 20; i++) {
+        long src = seeds[i];
+        for (int j = 0; j < 7; j++) {
+            long dest = src;
+            for (int k = 0; k < 50; k++) {
+                long* map = mappings[j][k];
+                if (map[2] == 0) break;
+                if (src >= map[0] && src <= map[0] + map[2]) {
+                    long offset = src - map[0];
+                    dest = map[1] + offset;
+                    break;
+                }
+            }
+            src = dest;
+        }
+        if (src < lowest) lowest = src;
+    }
+    printf("Lowest: %ld\n", lowest);
 }
