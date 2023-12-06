@@ -37,22 +37,25 @@ int main(int argc, char* argv[]) {
     }
     fclose(in);
     if (line) free(line);
-    for (int i = 0; i < NUM_SEEDS; i++) {
-        long src = seeds[i];
-        for (int j = 0; j < 7; j++) {
-            long dest = src;
-            for (int k = 0; k < 50; k++) {
-                long* map = mappings[j][k];
-                if (map[2] == 0) break;
-                if (src >= map[1] && src < map[1] + map[2]) {
-                    long offset = src - map[1];
-                    dest = map[0] + offset;
-                    break;
+    for (int i = 0; i < NUM_SEEDS; i += 2) {
+        long start = seeds[i];
+        for (long l = 0; l < seeds[i+1]; l++) {
+            long src = start + l;
+            for (int j = 0; j < 7; j++) {
+                long dest = src;
+                for (int k = 0; k < 50; k++) {
+                    long* map = mappings[j][k];
+                    if (map[2] == 0) break;
+                    if (src >= map[1] && src < map[1] + map[2]) {
+                        long offset = src - map[1];
+                        dest = map[0] + offset;
+                        break;
+                    }
                 }
+                src = dest;
             }
-            src = dest;
+            if (src < lowest) lowest = src;
         }
-        if (src < lowest) lowest = src;
     }
     printf("Lowest: %ld\n", lowest);
 }
