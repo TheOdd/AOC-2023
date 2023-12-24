@@ -71,6 +71,8 @@ point getOffset(enum direction dir) {
         case WEST:
             return (point){ .x = -1 };
     }
+    // Makes compiler happy. Should never execute.
+    return (point){0};
 }
 
 int main(int argc, char* argv[]) {
