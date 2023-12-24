@@ -132,9 +132,8 @@ foundStart:
     int area = 0;
     for (int i = 0; i < len; i++) {
         int a = i - 1 < 0 ? len - 1 : i - 1;
-        int b = i + 1 == len ? 0 : i + 1;
-        int y = HEIGHT - curve[i].y;
-        area += y * (curve[a].x - curve[b].x);
+        int b = (i + 1) % len;
+        area += curve[i].y * (curve[a].x - curve[b].x);
     }
     if (curve) free(curve);
     curve = NULL;
