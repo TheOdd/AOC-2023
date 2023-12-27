@@ -18,9 +18,7 @@ int main(int argc, char* argv[]) {
     size_t len = 0;
     char* line = NULL;
     bool emptyRows[HEIGHT] = {0};
-    int emptyRowCount = 0;
     bool emptyCols[WIDTH] = {0};
-    int emptyColCount = 0;
     char grid[HEIGHT][WIDTH] = {{0}};
     int row = 0;
     int numGalaxies = 0;
@@ -33,10 +31,8 @@ int main(int argc, char* argv[]) {
                 numGalaxies++;
             }
         }
-        if (isEmpty) {
+        if (isEmpty)
             emptyRows[row] = true;
-            emptyRowCount++;
-        }
         row++;
     }
     if (line) free(line);
@@ -50,10 +46,8 @@ int main(int argc, char* argv[]) {
                 break;
             }
         }
-        if (isEmpty) {
+        if (isEmpty)
             emptyCols[col] = true;
-            emptyColCount++;
-        }
     }
     point* galaxies = calloc(numGalaxies, sizeof(point));
     int galaxyLen = 0;
