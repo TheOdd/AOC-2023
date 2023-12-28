@@ -7,12 +7,12 @@ bool isValidArrangement(char* line, int lineLen, int* groups, int groupLen) {
     int gIdx = 0;
     int i = 0;
     while (i < lineLen) {
-        if (gIdx >= groupLen)
-            return false;
         if (line[i] != '#') {
             i++;
             continue;
         }
+        if (gIdx >= groupLen)
+            return false;
         // Start analyzing token
         int targetLen = groups[gIdx++];
         int curGroupLen = 0;
@@ -27,10 +27,8 @@ int permutationHelper(char* line, int lineLen, int idx, int* groups, int groupLe
     while (idx < lineLen && line[idx] != '?')
         idx++;
 
-    if (idx >= lineLen) {
-        bool valid = isValidArrangement(line, lineLen, groups, groupLen);
-        return valid ? 1 : 0;
-    }
+    if (idx >= lineLen)
+        return isValidArrangement(line, lineLen, groups, groupLen);
 
     char* lineCopy = malloc(lineLen * sizeof(*lineCopy));
     strncpy(lineCopy, line, lineLen);
@@ -48,39 +46,28 @@ int main(int argc, char* argv[]) {
     FILE* in = fopen("input", "r");
     char* line = NULL;
     size_t len = 0;
+    int res = 0;
     while (getline(&line, &len, in) != -1) {
         char* token = strtok(line, " ");
-        char* layout = malloc(strlen(token) * sizeof(*layout));
-        strcpy(layout, token);
+        int layoutLen = strlen(token);
+        char* layout = malloc(layoutLen * sizeof(*layout));
+        memcpy(layout, token, layoutLen);
         token = strtok(NULL, " ");
-        int dummy[2] = {1, 2};
         int groupCount = 1;
         for (int i = 0; token[i] != '\0'; i++)
             groupCount += token[i] == ',';
         int* groups = malloc(groupCount * sizeof(*groups));
-
-        permutationHelper(layout, strlen(layout), 0, dummy, 2);
+        int i = 0;
+        token = strtok(token, ",");
+        while (token != NULL) {
+            groups[i++] = atoi(token);
+            token = strtok(NULL, ",");
+        }
+        res += permutationHelper(layout, layoutLen, 0, groups, groupCount);
+        free(groups);
         free(layout);
     }
-    int dummy[] = {3,2,1};
-    char* test = malloc(12 * sizeof(char));
-    for (int i = 0; i < 12; i++) test[i] = "?###????????"[i];
-    int res = permutationHelper(test, 12, 0, dummy, 3);
     printf("%d\n", res);
-    bool valids[10];
-    valids[0] = isValidArrangement(".###.##.#...", 12, dummy, 3);
-    valids[1] = isValidArrangement(".###.##..#..", 12, dummy, 3);
-    valids[2] = isValidArrangement(".###.##...#.", 12, dummy, 3);
-    valids[3] = isValidArrangement(".###.##....#", 12, dummy, 3);
-    valids[4] = isValidArrangement(".###..##.#..", 12, dummy, 3);
-    valids[5] = isValidArrangement(".###..##..#.", 12, dummy, 3);
-    valids[6] = isValidArrangement(".###..##...#", 12, dummy, 3);
-    valids[7] = isValidArrangement(".###...##.#.", 12, dummy, 3);
-    valids[8] = isValidArrangement(".###...##..#", 12, dummy, 3);
-    valids[9] = isValidArrangement(".###....##.#", 12, dummy, 3);
-    for (int i = 0; i < 10; i++)
-        printf("%d\n", valids[i]);
-    free(test);
     if (line) free(line);
     line = NULL;
     fclose(in);
