@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
             }
         }
     }
-    bool **pointSeen = malloc(numGalaxies * sizeof(*pointSeen));
+    bool** pointSeen = malloc(numGalaxies * sizeof(*pointSeen));
     for (int i = 0; i < numGalaxies; i++)
         pointSeen[i] = calloc(numGalaxies, sizeof(*pointSeen[i]));
     unsigned long long res = 0;
